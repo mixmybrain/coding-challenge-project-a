@@ -1,4 +1,5 @@
 <?php
+
 namespace hr;
 
 /**
@@ -16,27 +17,63 @@ namespace hr;
  *
  */
 
+interface HandlerInterface
+{
+    public function handle(int $i): string;
+}
+
+class HandlerFizz implements HandlerInterface
+{
+    public function handle(int $i): string
+    {
+        return $i % 3 === 0 ? 'Fizz' : '';
+    }
+}
+
+class HandlerBuzz implements HandlerInterface
+{
+    public function handle(int $i): string
+    {
+        return $i % 5 === 0 ? 'Buzz' : '';
+    }
+}
 
 class FizzBuzzEngine
 {
+    /**
+     * @var array<HandlerInterface>
+     */
+    private array $handlers = [];
 
-    public function run($limit = 100)
+    public function addHandler(HandlerInterface $handler): self
+    {
+        $this->handlers[] = $handler;
+
+        return $this;
+    }
+
+    private function getHandlers(): array
+    {
+        return $this->handlers;
+    }
+
+    public function run(int $limit = 100): void
     {
         for ($i = 1; $i <= $limit; $i++) {
             $output = '';
-            if ($i % 3 == 0) {
-                $output .= "Fizz";
-            }
-            if ($i % 5 == 0) {
-                $output .= "Buzz";
+            foreach ($this->getHandlers() as $handler) {
+                $output .= $handler->handle($i);
             }
             if (empty($output)) {
                 $output = 'None';
             }
-            echo sprintf('%d: %s', $i, $output . PHP_EOL);
+            printf('%d: %s', $i, $output . PHP_EOL);
         }
     }
 }
 
 $engine = new FizzBuzzEngine();
-$engine->run();
+
+$engine->addHandler(new HandlerFizz())
+    ->addHandler(new HandlerBuzz())
+    ->run();
